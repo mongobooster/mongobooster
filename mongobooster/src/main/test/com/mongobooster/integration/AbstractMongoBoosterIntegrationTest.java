@@ -1,4 +1,4 @@
-package com.mongobooster;
+package com.mongobooster.integration;
 
 import java.net.UnknownHostException;
 
@@ -7,10 +7,19 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import com.mongobooster.MongoBooster;
+import com.mongobooster.MongoBoosterImpl;
 import com.mongodb.MongoClient;
 
+/**
+ * Abstract class to define a Mongobooster integration test. Needs an instance
+ * of MongoDB to run.
+ * 
+ * @author Dieter De Hen
+ * 
+ */
 @RunWith(JUnit4.class)
-public abstract class AbstractMongoBoosterTest {
+public abstract class AbstractMongoBoosterIntegrationTest {
 
     protected final String dbName = "mongobooster-test";
     protected MongoClient mongoClient;
@@ -25,7 +34,7 @@ public abstract class AbstractMongoBoosterTest {
 
     @After
     public void cleanUp() {
-        // mongoClient.dropDatabase(dbName);
+        mongoClient.dropDatabase(dbName);
         mongoClient.close();
     }
 

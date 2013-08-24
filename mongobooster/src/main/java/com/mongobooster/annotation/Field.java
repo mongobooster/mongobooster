@@ -8,6 +8,12 @@ import java.lang.annotation.Target;
 
 import com.mongobooster.util.Null;
 
+/**
+ * Annotates a field.
+ * 
+ * @author Dieter De Hen
+ * 
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })

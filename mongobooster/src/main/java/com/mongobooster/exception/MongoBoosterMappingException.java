@@ -1,5 +1,14 @@
 package com.mongobooster.exception;
 
+import com.mongodb.DBObject;
+
+/**
+ * General {@link Exception} to be thrown when Mongobooster could not map a
+ * {@link DBObject} to a custom object or vice versa.
+ * 
+ * @author Dieter De Hen
+ * 
+ */
 public class MongoBoosterMappingException extends RuntimeException {
 
     /**
