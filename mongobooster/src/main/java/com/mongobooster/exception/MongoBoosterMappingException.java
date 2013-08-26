@@ -41,4 +41,17 @@ public class MongoBoosterMappingException extends RuntimeException {
         return super.getStackTrace();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Throwable#getCause()
+     */
+    @Override
+    public synchronized Throwable getCause() {
+        if (t != null) {
+            return t;
+        }
+        return super.getCause();
+    }
+
 }

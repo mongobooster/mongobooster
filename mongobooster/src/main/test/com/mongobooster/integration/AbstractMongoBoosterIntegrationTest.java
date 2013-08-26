@@ -12,7 +12,7 @@ import com.mongobooster.MongoBoosterImpl;
 import com.mongodb.MongoClient;
 
 /**
- * Abstract class to define a Mongobooster integration test. Needs an instance
+ * Abstract class to define a MongoBooster integration test. Needs an instance
  * of MongoDB to run.
  * 
  * @author Dieter De Hen

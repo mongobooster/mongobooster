@@ -1,7 +1,7 @@
 package com.mongobooster.util;
 
 /**
- * Util class for building getter and setter methods.
+ * Utility class for building getter and setter methods.
  * 
  * @author Dieter De Hen
  * 
