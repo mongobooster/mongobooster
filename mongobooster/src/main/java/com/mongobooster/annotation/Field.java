@@ -18,5 +18,8 @@ import com.mongobooster.util.Null;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 public @interface Field {
-    Class<?> value() default Null.class;
+
+    Class<?> type() default Null.class;
+
+    boolean indexed() default false;
 }

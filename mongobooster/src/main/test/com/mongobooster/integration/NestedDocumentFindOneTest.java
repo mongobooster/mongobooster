@@ -43,7 +43,7 @@ public class NestedDocumentFindOneTest extends AbstractMongoBoosterIntegrationTe
         @Field
         private String lastName;
 
-        @Field(ArrayList.class)
+        @Field(type = ArrayList.class)
         private List<Owner> owners;
 
         /**

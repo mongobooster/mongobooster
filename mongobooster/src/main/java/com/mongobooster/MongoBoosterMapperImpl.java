@@ -36,27 +36,34 @@ public class MongoBoosterMapperImpl implements MongoBoosterMapper {
                 for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
                     if (dbObject.containsField(field.getName())) {
                         if (field.isAnnotationPresent(Field.class)) {
-                            if (field.getType().isAnnotationPresent(Document.class)) {
+                            Class<?> type = null;
+                            if (!Null.class.equals(field.getAnnotation(Field.class).type())) {
+                                type = field.getAnnotation(Field.class).type();
+                            } else {
+                                type = field.getType();
+                            }
+
+                            if (type.isAnnotationPresent(Document.class)) {
                                 MethodBuilderUtil.buildSetterMethod(field, clazz).invoke(instance,
-                                        map(dbObject.get(field.getName()), field.getType()));
-                            } else if (Collection.class.isAssignableFrom(field.getType())
-                                    && ((Class<?>) (((java.lang.reflect.ParameterizedType) field.getGenericType())
-                                            .getActualTypeArguments()[0])).isAnnotationPresent(Document.class)) {
+                                        map(dbObject.get(field.getName()), type));
+                            } else if (Collection.class.isAssignableFrom(type)) {
                                 BasicDBList dbList = (BasicDBList) dbObject.get(field.getName());
                                 if (!dbList.isEmpty()) {
-                                    Class<?> genericType = ((Class<?>) (((java.lang.reflect.ParameterizedType) field
-                                            .getGenericType()).getActualTypeArguments()[0]));
+                                    Collection<? super Object> collection = (Collection<? super Object>) type
+                                            .newInstance();
 
-                                    Collection<? super Object> collection = null;
-                                    if (!Null.class.equals(field.getAnnotation(Field.class).value())) {
-                                        collection = (Collection<? super Object>) field.getAnnotation(Field.class)
-                                                .value().newInstance();
+                                    if (((Class<?>) (((java.lang.reflect.ParameterizedType) field.getGenericType())
+                                            .getActualTypeArguments()[0])).isAnnotationPresent(Document.class)) {
+                                        Class<?> genericType = ((Class<?>) (((java.lang.reflect.ParameterizedType) field
+                                                .getGenericType()).getActualTypeArguments()[0]));
+
+                                        for (Object o : dbList) {
+                                            collection.add(map((DBObject) o, genericType));
+                                        }
                                     } else {
-                                        collection = (Collection<? super Object>) field.getType().newInstance();
-                                    }
-
-                                    for (Object o : dbList) {
-                                        collection.add(map((DBObject) o, genericType));
+                                        for (Object o : dbList) {
+                                            collection.add(o);
+                                        }
                                     }
                                     MethodBuilderUtil.buildSetterMethod(field, clazz).invoke(instance, collection);
                                 }

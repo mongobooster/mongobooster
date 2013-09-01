@@ -3,6 +3,7 @@ package com.mongobooster;
 import org.bson.types.ObjectId;
 
 import com.mongobooster.annotation.Document;
+import com.mongobooster.annotation.Field;
 import com.mongobooster.annotation.Id;
 import com.mongobooster.exception.MongoBoosterMappingException;
 import com.mongobooster.util.MethodBuilderUtil;
@@ -53,6 +54,7 @@ public class MongoBoosterImpl implements MongoBooster {
         DBObject dbObject = mapper.map(instance, instance.getClass());
         WriteResult writeResult = db.getCollection(instance.getClass().getSimpleName().toLowerCase()).save(dbObject);
         fillId(instance, (ObjectId) dbObject.get("_id"));
+        createIndexes(instance);
         return writeResult;
     }
 
@@ -64,6 +66,23 @@ public class MongoBoosterImpl implements MongoBooster {
                     if (field.isAnnotationPresent(Id.class)) {
                         MethodBuilderUtil.buildSetterMethod(field, clazz).invoke(instance, id.toString());
                         return;
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            throw new MongoBoosterMappingException(t);
+        }
+    }
+
+    private <T> void createIndexes(T instance) {
+        Class<?> clazz = instance.getClass();
+        try {
+            if (clazz.isAnnotationPresent(Document.class)) {
+                for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+                    if (field.isAnnotationPresent(Field.class)) {
+                        if (field.getAnnotation(Field.class).indexed()) {
+                            db.getCollection(clazz.getSimpleName().toLowerCase()).ensureIndex(field.getName());
+                        }
                     }
                 }
             }
