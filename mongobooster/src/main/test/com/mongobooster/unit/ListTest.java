@@ -67,6 +67,7 @@ public class ListTest extends AbstractMongoBoosterUnitTest {
 
     @Test
     public void test() {
+        //
         BasicDBList dbList = new BasicDBList();
         dbList.add("John Doe");
         dbList.add("Fons De Spons");
