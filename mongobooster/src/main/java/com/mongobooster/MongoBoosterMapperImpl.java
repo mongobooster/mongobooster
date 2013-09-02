@@ -1,6 +1,7 @@
 package com.mongobooster;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.bson.types.ObjectId;
 
@@ -8,8 +9,8 @@ import com.mongobooster.annotation.Document;
 import com.mongobooster.annotation.Field;
 import com.mongobooster.annotation.Id;
 import com.mongobooster.exception.MongoBoosterMappingException;
-import com.mongobooster.util.MethodBuilderUtil;
 import com.mongobooster.util.Null;
+import com.mongobooster.util.ReflectionUtils;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -33,7 +34,8 @@ public class MongoBoosterMapperImpl implements MongoBoosterMapper {
         try {
             if (clazz.isAnnotationPresent(Document.class)) {
                 T instance = clazz.newInstance();
-                for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+                List<java.lang.reflect.Field> fields = ReflectionUtils.getFields(clazz);
+                for (java.lang.reflect.Field field : fields) {
                     if (dbObject.containsField(field.getName())) {
                         if (field.isAnnotationPresent(Field.class)) {
                             Class<?> type = null;
@@ -44,8 +46,8 @@ public class MongoBoosterMapperImpl implements MongoBoosterMapper {
                             }
 
                             if (type.isAnnotationPresent(Document.class)) {
-                                MethodBuilderUtil.buildSetterMethod(field, clazz).invoke(instance,
-                                        map(dbObject.get(field.getName()), type));
+                                ReflectionUtils.buildSetterMethod(field, clazz).invoke(instance,
+                                        map((DBObject) dbObject.get(field.getName()), type));
                             } else if (Collection.class.isAssignableFrom(type)) {
                                 BasicDBList dbList = (BasicDBList) dbObject.get(field.getName());
                                 if (!dbList.isEmpty()) {
@@ -65,15 +67,15 @@ public class MongoBoosterMapperImpl implements MongoBoosterMapper {
                                             collection.add(o);
                                         }
                                     }
-                                    MethodBuilderUtil.buildSetterMethod(field, clazz).invoke(instance, collection);
+                                    ReflectionUtils.buildSetterMethod(field, clazz).invoke(instance, collection);
                                 }
                             } else {
-                                MethodBuilderUtil.buildSetterMethod(field, clazz).invoke(instance,
+                                ReflectionUtils.buildSetterMethod(field, clazz).invoke(instance,
                                         dbObject.get(field.getName()));
                             }
                         } else if (field.isAnnotationPresent(Id.class)
                                 && String.class.isAssignableFrom(field.getType())) {
-                            MethodBuilderUtil.buildSetterMethod(field, clazz).invoke(instance,
+                            ReflectionUtils.buildSetterMethod(field, clazz).invoke(instance,
                                     ((ObjectId) dbObject.get("_id")).toString());
                         }
                     }
@@ -96,15 +98,23 @@ public class MongoBoosterMapperImpl implements MongoBoosterMapper {
         try {
             if (clazz.isAnnotationPresent(Document.class)) {
                 DBObject dbObject = new BasicDBObject();
-                for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+                List<java.lang.reflect.Field> fields = ReflectionUtils.getFields(clazz);
+                for (java.lang.reflect.Field field : fields) {
                     if (field.isAnnotationPresent(Field.class)) {
-                        Object child = MethodBuilderUtil.buildGetterMethod(field, clazz).invoke(instance);
-                        if (field.getType().isAnnotationPresent(Document.class)) {
+                        Class<?> type = null;
+                        if (!Null.class.equals(field.getAnnotation(Field.class).type())) {
+                            type = field.getAnnotation(Field.class).type();
+                        } else {
+                            type = field.getType();
+                        }
+
+                        Object child = ReflectionUtils.buildGetterMethod(field, clazz).invoke(instance);
+                        if (type.isAnnotationPresent(Document.class)) {
                             if (child != null) {
-                                dbObject.put(field.getName(), map(child, field.getType()));
+                                dbObject.put(field.getName(), map(child, type));
                             }
                         } else {
-                            if (Collection.class.isAssignableFrom(field.getType())
+                            if (Collection.class.isAssignableFrom(type)
                                     && ((Class<?>) (((java.lang.reflect.ParameterizedType) field.getGenericType())
                                             .getActualTypeArguments()[0])).isAnnotationPresent(Document.class)) {
                                 Class<?> genericType = ((Class<?>) (((java.lang.reflect.ParameterizedType) field
@@ -116,11 +126,11 @@ public class MongoBoosterMapperImpl implements MongoBoosterMapper {
                                 dbObject.put(field.getName(), dbList);
                             } else {
                                 dbObject.put(field.getName(),
-                                        MethodBuilderUtil.buildGetterMethod(field, clazz).invoke(instance));
+                                        ReflectionUtils.buildGetterMethod(field, clazz).invoke(instance));
                             }
                         }
                     } else if (field.isAnnotationPresent(Id.class) && String.class.isAssignableFrom(field.getType())) {
-                        Object id = MethodBuilderUtil.buildGetterMethod(field, clazz).invoke(instance);
+                        Object id = ReflectionUtils.buildGetterMethod(field, clazz).invoke(instance);
                         if (id != null) {
                             dbObject.put("_id", new ObjectId((String) id));
                         }

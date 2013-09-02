@@ -1,14 +1,17 @@
 package com.mongobooster.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Utility class for building getter and setter methods.
  * 
  * @author Dieter De Hen
  * 
  */
-public class MethodBuilderUtil {
+public class ReflectionUtils {
 
-    private MethodBuilderUtil() {
+    private ReflectionUtils() {
 
     }
 
@@ -58,5 +61,24 @@ public class MethodBuilderUtil {
             }
         }
         throw new NoSuchMethodException();
+    }
+
+    /**
+     * Get all fields of a class, including fields of super classes.
+     * 
+     * @param clazz
+     * @return
+     */
+    public static List<java.lang.reflect.Field> getFields(Class<?> clazz) {
+        List<java.lang.reflect.Field> fields = new ArrayList<java.lang.reflect.Field>();
+        Class<?> c = clazz;
+        do {
+            for (java.lang.reflect.Field field : c.getDeclaredFields()) {
+                fields.add(field);
+            }
+            c = c.getSuperclass();
+        } while (c != Object.class);
+
+        return fields;
     }
 }

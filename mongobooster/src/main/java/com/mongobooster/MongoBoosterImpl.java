@@ -6,7 +6,7 @@ import com.mongobooster.annotation.Document;
 import com.mongobooster.annotation.Field;
 import com.mongobooster.annotation.Id;
 import com.mongobooster.exception.MongoBoosterMappingException;
-import com.mongobooster.util.MethodBuilderUtil;
+import com.mongobooster.util.ReflectionUtils;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -64,7 +64,7 @@ public class MongoBoosterImpl implements MongoBooster {
             if (clazz.isAnnotationPresent(Document.class)) {
                 for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
                     if (field.isAnnotationPresent(Id.class)) {
-                        MethodBuilderUtil.buildSetterMethod(field, clazz).invoke(instance, id.toString());
+                        ReflectionUtils.buildSetterMethod(field, clazz).invoke(instance, id.toString());
                         return;
                     }
                 }
