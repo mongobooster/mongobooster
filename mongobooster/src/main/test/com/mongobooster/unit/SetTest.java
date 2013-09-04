@@ -65,6 +65,7 @@ public class SetTest extends AbstractMongoBoosterUnitTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void test() {
         BasicDBList dbList = new BasicDBList();
