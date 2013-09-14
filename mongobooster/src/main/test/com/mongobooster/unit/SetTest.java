@@ -84,7 +84,7 @@ public class SetTest extends AbstractMongoBoosterUnitTest {
         school.setStudents(students);
 
         DBObject mappedDBObject = mapper.map(school, School.class);
-        Set<String> b = (HashSet<String>) mappedDBObject.get("students");
+        BasicDBList b = (BasicDBList) mappedDBObject.get("students");
         Assert.assertTrue(b.contains("John Doe"));
         Assert.assertTrue(b.contains("Bart Simpson"));
         Assert.assertTrue(b.contains("Lisa Simpson"));

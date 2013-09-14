@@ -2,6 +2,7 @@ package com.mongobooster;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.bson.types.ObjectId;
 
@@ -114,16 +115,39 @@ public class MongoBoosterMapperImpl implements MongoBoosterMapper {
                                 dbObject.put(field.getName(), map(child, type));
                             }
                         } else {
-                            if (Collection.class.isAssignableFrom(type)
-                                    && ((Class<?>) (((java.lang.reflect.ParameterizedType) field.getGenericType())
-                                            .getActualTypeArguments()[0])).isAnnotationPresent(Document.class)) {
-                                Class<?> genericType = ((Class<?>) (((java.lang.reflect.ParameterizedType) field
-                                        .getGenericType()).getActualTypeArguments()[0]));
+                            if (Collection.class.isAssignableFrom(type)) {
                                 BasicDBList dbList = new BasicDBList();
-                                for (Object o : (Collection<?>) child) {
-                                    dbList.add(map(o, genericType));
+                                if (((Class<?>) (((java.lang.reflect.ParameterizedType) field.getGenericType())
+                                        .getActualTypeArguments()[0])).isAnnotationPresent(Document.class)) {
+                                    Class<?> genericType = ((Class<?>) (((java.lang.reflect.ParameterizedType) field
+                                            .getGenericType()).getActualTypeArguments()[0]));
+
+                                    for (Object o : (Collection<?>) child) {
+                                        dbList.add(map(o, genericType));
+                                    }
+                                } else {
+                                    for (Object o : (Collection<?>) child) {
+                                        dbList.add(o);
+                                    }
                                 }
                                 dbObject.put(field.getName(), dbList);
+                            } else if (Map.class.isAssignableFrom(type)) {
+                                BasicDBObject dbMap = new BasicDBObject();
+
+                                if (((Class<?>) (((java.lang.reflect.ParameterizedType) field.getGenericType())
+                                        .getActualTypeArguments()[1])).isAnnotationPresent(Document.class)) {
+                                    Class<?> genericType = ((Class<?>) (((java.lang.reflect.ParameterizedType) field
+                                            .getGenericType()).getActualTypeArguments()[1]));
+
+                                    for (Map.Entry<?, ?> entry : ((Map<?, ?>) child).entrySet()) {
+                                        dbMap.put((String) entry.getKey(), map(entry.getValue(), genericType));
+                                    }
+                                } else {
+                                    for (Map.Entry<?, ?> entry : ((Map<?, ?>) child).entrySet()) {
+                                        dbMap.put((String) entry.getKey(), entry.getValue());
+                                    }
+                                }
+                                dbObject.put(field.getName(), dbMap);
                             } else {
                                 dbObject.put(field.getName(),
                                         ReflectionUtils.buildGetterMethod(field, clazz).invoke(instance));
@@ -143,5 +167,4 @@ public class MongoBoosterMapperImpl implements MongoBoosterMapper {
         }
         throw new MongoBoosterMappingException();
     }
-
 }
